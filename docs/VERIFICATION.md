@@ -12,7 +12,11 @@ Engine coverage includes both full routes through star delivery, return crossing
 
 The local command environment prevented Chromium from creating required sockets. The supported escalation was rejected by the environment policy. The managed browser also rejected local file URLs. These are recorded environment limitations, not passed browser tests.
 
-The committed GitHub Actions workflow is the intended HTTP-origin execution environment for the four browser scenarios. Results will be recorded after it runs; test discovery alone is not a pass.
+The [Adventure checks workflow](https://github.com/dvdmrtnz15-afk/little-moon-star-garden-/actions/workflows/ci.yml) runs the four browser scenarios on an ordinary HTTP origin. The latest run attached to [pull request #1](https://github.com/dvdmrtnz15-afk/little-moon-star-garden-/pull/1) is the authoritative browser result; a passing result requires all four scenarios. Reports, renderer metadata, screenshots, and the built game are retained as `adventure-evidence` artifacts for 14 days.
+
+The [first PR run](https://github.com/dvdmrtnz15-afk/little-moon-star-garden-/actions/runs/43434104400) passed the full canopy route, touch-operated ferry route, and malformed-save recovery. Its keyboard check failed because a fixed 350 ms hold produced too few simulation frames under software rendering. A parallel run also exposed an overly restrictive frame-time cap during a long walk. The follow-up changes use a bounded observed key hold, preserve elapsed simulation time up to a 250 ms hitch limit, and reset that clock on pause/resume. The engine still integrates movement and growth in small steps.
+
+Review of those actual screenshots also identified downward-facing paths beneath the terrain and a mobile label overlapping the quest card. Follow-up changes correct path geometry and placement, move the mobile label, and reduce the tessellation of tiny flowers while preserving character and tree geometry. Successful-test evidence now persists as named files for straightforward inspection.
 
 Browser scenarios use visible controls and normal-speed movement. A read-only snapshot API observes results; tests do not teleport the player, dispatch internal actions, or write completion flags. The corruption scenario deliberately writes malformed save bytes before launch.
 

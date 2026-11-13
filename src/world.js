@@ -17,6 +17,10 @@ function mat(color, extras = {}) {
 }
 const shared = {
   sphere: new THREE.SphereGeometry(1, 12, 8),
+  // These tiny instanced details occupy only a handful of screen pixels.
+  // Keep the larger foliage and character silhouettes on their own meshes.
+  flowerSphere: new THREE.SphereGeometry(1, 8, 4),
+  flowerStem: new THREE.CylinderGeometry(1, 1, 1, 6),
   rock: new THREE.DodecahedronGeometry(1, 0),
   cylinder: new THREE.CylinderGeometry(1, 1, 1, 10),
   box: new THREE.BoxGeometry(1, 1, 1),
@@ -51,8 +55,8 @@ function starGeometry(radius = .45, depth = .16) {
   geo.translate(0, 0, -depth / 2);
   return geo;
 }
-function path(parent, points, width, material) {
-  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, .055, z)));
+function path(parent, points, width, material, height = .115) {
+  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, height, z)));
   const positions = [], uvs = [], indices = [];
   const n = 50;
   for (let i = 0; i <= n; i++) {
@@ -60,7 +64,7 @@ function path(parent, points, width, material) {
     const side = new THREE.Vector3(tangent.z, 0, -tangent.x).normalize().multiplyScalar(width / 2);
     positions.push(p.x + side.x, p.y, p.z + side.z, p.x - side.x, p.y, p.z - side.z);
     uvs.push(0, i / n, 1, i / n);
-    if (i < n) { const k = i * 2; indices.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
+    if (i < n) { const k = i * 2; indices.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -133,10 +137,10 @@ function createFlora(parent, locations, seed = 1) {
     if (batch.instanceColor) batch.instanceColor.needsUpdate = true;
     parent.add(batch);
   }
-  instances(petals, shared.sphere, mat('#ffffff'));
-  instances(centers, shared.sphere, mat('#ffffff'));
-  instances(stems, shared.cylinder, mat('#557c54'));
-  instances(leaves, shared.sphere, mat('#729564'));
+  instances(petals, shared.flowerSphere, mat('#ffffff'));
+  instances(centers, shared.flowerSphere, mat('#ffffff'));
+  instances(stems, shared.flowerStem, mat('#557c54'));
+  instances(leaves, shared.flowerSphere, mat('#729564'));
   instances(grass, new THREE.ConeGeometry(1, 1, 3), mat('#628767'));
 }
 
@@ -381,9 +385,9 @@ export function createWorld(container, options = {}) {
   const pads = { ferry: makePad(stream, -9, 3, 'ferry', materials, addPick), canopy: makePad(stream, -9, -3, 'canopy', materials, addPick) };
   const lineMaterials = { ferry: mat('#d4be8e', { emissive: '#9f723d', emissiveIntensity: .2 }), canopy: mat('#abcbb2', { emissive: '#6a9580', emissiveIntensity: .2 }) };
   const ferryLine = path(stream, [[-8.4, 3], [-7.7, 2.65], [-6.2, 2.6], [-5.5, 3]], .055, lineMaterials.ferry);
-  ferryLine.position.y = .07;
+  ferryLine.position.y = .01;
   const canopyLine = path(stream, [[-8.4, -3], [-7.5, -2.75], [-6.2, -2.9], [-5.4, -3]], .055, lineMaterials.canopy);
-  canopyLine.position.y = .07;
+  canopyLine.position.y = .01;
   // Lily's shallow planting basin has actual water and a visible growing seed.
   const basin = new THREE.Group(); basin.position.set(-5, 0, 3); stream.add(basin);
   cylinder(basin, materials.stone, 0, .34, 0, .64, .56);
@@ -405,7 +409,7 @@ export function createWorld(container, options = {}) {
   addPick('workbench', -5, -3, .8, 1.1);
   const ferryBoat = new THREE.Group(); ferryBoat.position.set(-2.8, -.035, 4); stream.add(ferryBoat);
   const ferryLeaf = cylinder(ferryBoat, materials.leafLight, 0, 0, 0, 1.04, .13); ferryLeaf.scale.z = .82;
-  const ferryVein = path(ferryBoat, [[-.83, 0], [0, 0], [.83, 0]], .035, materials.grass); ferryVein.position.y = .025;
+  const ferryVein = path(ferryBoat, [[-.83, 0], [0, 0], [.83, 0]], .035, materials.grass, .045); ferryVein.position.y = .025;
   for (const side of [-1, 1]) {
     const rimPoints = [];
     for (let i = 0; i <= 10; i++) { const a = i * Math.PI / 10; rimPoints.push([Math.cos(a), .11, side * Math.sin(a) * .8]); }

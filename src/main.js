@@ -36,7 +36,7 @@ function save(){
   $('#save-status').textContent=t(storageOK?'saved':'savingUnavailable');
 }
 function savePreferences(){try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences));}catch{toast(t('savingUnavailable'));}}
-function setPaused(paused){state=dispatch(state,{type:'PAUSE',paused}).state;document.body.classList.toggle('paused-world',paused&&started);keys.clear();}
+function setPaused(paused){state=dispatch(state,{type:'PAUSE',paused}).state;document.body.classList.toggle('paused-world',paused&&started);keys.clear();frameTime=performance.now();}
 function gameCommand(command,{quiet=false}={}){
   if(!started||contextLost)return false;
   const result=dispatch(state,command);
@@ -241,7 +241,10 @@ window.addEventListener('blur',()=>{keys.clear();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&started){keys.clear();if(!modal.open)openPause();save();}});
 window.addEventListener('pagehide',save);
 function frame(now){
-  const dt=Math.min(.05,Math.max(0,(now-frameTime)/1000));frameTime=now;
+  // The engine integrates movement and construction in small internal steps.
+  // Preserve elapsed time on slower renderers; cap long hitches and reset the
+  // clock when pausing so returning to a tab cannot fast-forward the adventure.
+  const dt=Math.min(.25,Math.max(0,(now-frameTime)/1000));frameTime=now;
   if(started&&!modal.open&&!contextLost){
     const horizontal=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);
     const vertical=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0);

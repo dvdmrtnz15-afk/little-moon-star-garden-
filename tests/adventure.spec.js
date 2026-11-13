@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
 // All progression uses the public controls at the normal simulation speed.
 // The debug API below is read-only observation; tests never dispatch game actions,
@@ -24,6 +26,20 @@ const LANDMARKS = {
 };
 
 const snapshot = (page) => page.evaluate(() => window.__littleMoon.snapshot());
+
+async function attachJson(testInfo, name, value) {
+  const path = testInfo.outputPath(`${name}.json`);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(value, null, 2));
+  await testInfo.attach(name, { path, contentType: 'application/json' });
+}
+
+async function attachScreenshot(page, testInfo, name) {
+  const path = testInfo.outputPath(`${name}.png`);
+  await mkdir(dirname(path), { recursive: true });
+  await page.screenshot({ path, fullPage: true });
+  await testInfo.attach(name, { path, contentType: 'image/png' });
+}
 
 async function stateMatches(page, predicate, message, timeout = 30_000) {
   await expect.poll(async () => predicate(await snapshot(page)), {
@@ -77,12 +93,9 @@ async function begin(page, testInfo, touch = false) {
   expect(rendering.renderer).toBe('WebGL');
   expect(rendering.contextLost).toBe(false);
   expect(rendering.drawCalls).toBeGreaterThan(0);
-  await testInfo.attach('renderer-evidence', {
-    body: Buffer.from(JSON.stringify({
-      environment: 'Headless Chromium with ANGLE/SwiftShader software WebGL; not hardware GPU validation',
-      ...rendering,
-    }, null, 2)),
-    contentType: 'application/json',
+  await attachJson(testInfo, 'renderer-evidence', {
+    environment: 'Headless Chromium with ANGLE/SwiftShader software WebGL; not hardware GPU validation',
+    ...rendering,
   });
 }
 
@@ -121,10 +134,7 @@ async function completeAdventure(page, route, testInfo, { touch = false, plot = 
   await command(page, 'dismiss', touch);
   await stateMatches(page, (s) => !s.moonprint && s[route].complete,
     'A completed physical route should remain usable after releasing the Moonprint');
-  await testInfo.attach(`${route}-constructed`, {
-    body: await page.screenshot({ fullPage: true }),
-    contentType: 'image/png',
-  });
+  await attachScreenshot(page, testInfo, `${route}-constructed`);
 
   const west = route === 'ferry' ? 'dock-west' : 'canopy-west';
   const east = route === 'ferry' ? 'dock-east' : 'canopy-east';
@@ -151,10 +161,7 @@ async function completeAdventure(page, route, testInfo, { touch = false, plot = 
   await stateMatches(page, (s) => s.garden.placements[plot] === feature,
     'The adventure should create a lasting, player-placed garden feature');
   await command(page, 'keep-exploring', touch);
-  await testInfo.attach(`${route}-garden`, {
-    body: await page.screenshot({ fullPage: true }),
-    contentType: 'image/png',
-  });
+  await attachScreenshot(page, testInfo, `${route}-garden`);
   return { plot, feature };
 }
 
@@ -170,11 +177,15 @@ test('desktop keyboard, pause, ferry adventure, and ordinary-origin save/reload'
 
   const initial = await snapshot(page);
   await page.keyboard.down('d');
-  await page.waitForTimeout(350);
-  await page.keyboard.up('d');
-  await stateMatches(page, (s) =>
-    Math.hypot(s.player.x - initial.player.x, s.player.z - initial.player.z) > 0.3,
-  'Keyboard input should actually move the explorer');
+  try {
+    // Keep the real key held until normal simulation frames produce movement.
+    // A fixed wall-time hold is unreliable with a slow software WebGL renderer.
+    await stateMatches(page, (s) =>
+      Math.hypot(s.player.x - initial.player.x, s.player.z - initial.player.z) > 0.3,
+    'Keyboard input should actually move the explorer', 15_000);
+  } finally {
+    await page.keyboard.up('d');
+  }
 
   await selectPlace(page, 'portal');
   await stateMatches(page, (s) => Boolean(s.player.target), 'Choosing a place should initiate a real walk');
