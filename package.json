@@ -1,0 +1,25 @@
+{
+  "name": "little-moon-star-garden",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A playable storybook adventure with remembered light, living seeds and a garden that remembers.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/engine.test.js",
+    "test:browser": "playwright test",
+    "check": "npm test && npm run build && npm run test:browser"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "esbuild": "0.28.2"
+  }
+}
