@@ -1,0 +1,33 @@
+name: Adventure checks
+
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  playable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: adventure-evidence
+          path: |
+            test-results/
+            release/Little_Moon_Play.html
+          retention-days: 14

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101f2d">
+  <meta name="description" content="A little adventure. A world that remembers. Explore the Star Garden with Little Moon, grow a crossing, and guide a lost star home.">
+  <title>Little Moon & the Star Garden</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23f3daa2'/%3E%3Ccircle cx='23' cy='29' r='3' fill='%23233b48'/%3E%3Ccircle cx='41' cy='29' r='3' fill='%23233b48'/%3E%3Cpath d='M24 40Q32 47 40 40' fill='none' stroke='%23233b48' stroke-width='3'/%3E%3C/svg%3E">
+  <!--STYLE-->
+</head>
+<body>
+  <div id="world" role="img" aria-label="The moonlit Star Garden. Use Places to navigate with buttons, or click the ground to walk."></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Little Moon and the Star Garden"><span class="moon-mark" aria-hidden="true"><i></i><b></b></span><span>Little Moon<small>& THE STAR GARDEN</small></span></a>
+    <div class="chapter-mark"><span class="tiny-star">✦</span><span data-i18n="chapter">THE LANTERN TRAIL</span><span class="chapter-number">01</span></div>
+    <nav class="top-actions" aria-label="Game tools">
+      <button class="icon-button" data-command="journal" aria-label="Memory book" title="Memory book"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-3-3-7-3-9-2v15c3-1 6-1 9 2 3-3 6-3 9-2V4c-2-1-6-1-9 2Zm0 0v15"/></svg><span data-i18n="journal">Memory book</span></button>
+      <button class="icon-button" data-command="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M9 3v6M15 9v6M8 15v6"/></svg><span class="sr-only" data-i18n="settings">Settings</span></button>
+      <button class="icon-button" data-command="pause" aria-label="Pause adventure" title="Pause adventure"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span class="sr-only" data-i18n="pause">Pause</span></button>
+    </nav>
+  </header>
+
+  <main id="play-ui" hidden>
+    <aside class="quest-card" aria-label="Current adventure">
+      <div class="eyebrow"><span class="tiny-star">✧</span><span data-i18n="yourAdventure">YOUR ADVENTURE</span></div>
+      <h1 data-i18n="questTitle">A light to lead home</h1>
+      <p id="objective"></p>
+      <div class="quest-steps" aria-label="Adventure progress"><span data-step="star" title="Find the star">✧</span><i></i><span data-step="crossing" title="Make a crossing">⌁</span><i></i><span data-step="home" title="Bring it home">⌂</span><i></i><span data-step="garden" title="Grow your garden">❋</span></div>
+      <button class="text-button" data-command="hint"><span data-i18n="hint">A little hint</span><span aria-hidden="true">↗</span></button>
+    </aside>
+    <div class="location-label"><span class="location-dot"></span><span id="location-name">The Star Garden</span></div>
+    <button class="places-button" data-command="places"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16"/></svg><span data-i18n="places">Places</span><kbd>M</kbd></button>
+    <div class="magic-controls">
+      <button class="magic-button" data-command="remember"><span class="magic-orbit" aria-hidden="true">☾</span><span data-i18n="remember">Remember light</span><kbd>R</kbd></button>
+      <button class="magic-button release" data-command="dismiss" hidden><span aria-hidden="true">✧</span><span data-i18n="dismiss">Release Moonprint</span></button>
+    </div>
+    <div class="travel-status" id="travel-status" hidden><span class="walking-dots" aria-hidden="true">•••</span><span id="travel-text"></span></div>
+    <section class="dialogue-panel" aria-label="Little Moon and nearby actions">
+      <div class="portrait" aria-hidden="true"><div class="portrait-moon"><i></i><b></b><em></em></div><span>✦</span></div>
+      <div class="dialogue-copy"><div class="speaker-line"><span data-i18n="littleMoon">LITTLE MOON</span><button data-command="speak" class="speak-button" aria-label="Read this line aloud" title="Read this line aloud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-5 4H2v6h3l5 4V5Zm5 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg></button></div><p id="dialogue"></p></div>
+      <div id="context-actions" class="context-actions"></div>
+    </section>
+    <div class="control-note"><span data-i18n="controls">Click a place to walk · WASD / arrows · E to interact</span><span class="save-status" id="save-status"></span></div>
+    <div class="touch-pad" aria-label="Movement controls"><button data-direction="up" aria-label="Walk north">↑</button><button data-direction="left" aria-label="Walk west">←</button><button data-direction="down" aria-label="Walk south">↓</button><button data-direction="right" aria-label="Walk east">→</button></div>
+  </main>
+
+  <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+    <div class="welcome-content"><div class="eyebrow"><span class="tiny-star">✦</span><span data-i18n="storybook">A STORYBOOK ADVENTURE</span></div><h1 id="welcome-title">Little Moon<span>& the Star Garden</span></h1><p class="welcome-tagline" data-i18n="tagline">A little adventure.<br>A world that remembers.</p><p class="welcome-description" data-i18n="welcomeDescription">A star has lost its way. Grow a crossing, make a little moonlight magic, and bring a new memory home.</p><button class="primary-button begin-button" data-command="begin"><span id="begin-label">Begin adventure</span><span aria-hidden="true">↗</span></button><p class="welcome-note" data-i18n="welcomeNote">Explore at your own pace. There is always time.</p><div class="welcome-footer"><span data-i18n="chapterOne">CHAPTER ONE</span><i></i><span data-i18n="lanternLost">The Lantern That Couldn't Get Home</span></div></div>
+  </section>
+
+  <dialog id="modal" aria-labelledby="modal-title"><div class="modal-heading"><div><span class="eyebrow" id="modal-eyebrow">THE STAR GARDEN</span><h2 id="modal-title"></h2></div><button class="close-button" data-command="close" aria-label="Close">×</button></div><div id="modal-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="renderer-status" class="renderer-status" hidden></div>
+  <noscript><div class="noscript">Little Moon needs JavaScript to run this adventure. Please enable it in your browser.</div></noscript>
+  <!--SCRIPT-->
+</body>
+</html>
